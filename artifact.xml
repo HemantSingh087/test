@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="StatusRetrieveAPI" groupId="com.example.APISample.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/StatusRetrieveAPI.xml</file>
+    </artifact>
+    <artifact name="GetInstitutions" groupId="com.example.APISample.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/GetInstitutions.xml</file>
+    </artifact>
+    <artifact name="proxyIterateJson" groupId="com.example.APISample.proxy-service" version="1.0.0" type="synapse/proxy-service" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/proxy-services/proxyIterateJson.xml</file>
+    </artifact>
+    <artifact name="IEPNew" groupId="com.example.APISample.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/IEPNew.xml</file>
+    </artifact>
+    <artifact name="sendSequence" groupId="com.example.APISample.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/sendSequence.xml</file>
+    </artifact>
+    <artifact name="iterOutTest" groupId="com.example.APISample.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/iterOutTest.xml</file>
+    </artifact>
+    <artifact name="IterateAggregateAPI" groupId="com.example.APISample.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/IterateAggregateAPI.xml</file>
+    </artifact>
+    <artifact name="myPayloadSeq" groupId="com.example.APISample.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/myPayloadSeq.xml</file>
+    </artifact>
+    <artifact name="myPayloadApi" groupId="com.example.APISample.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/myPayloadApi.xml</file>
+    </artifact>
+    <artifact name="invokePayloadApi" groupId="com.example.APISample.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/invokePayloadApi.xml</file>
+    </artifact>
+    <artifact name="MLESBExecuteOrderLine" groupId="com.example.APISample.proxy-service" version="1.0.0" type="synapse/proxy-service" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/proxy-services/MLESBExecuteOrderLine.xml</file>
+    </artifact>
+    <artifact name="TestDSS" groupId="com.example.APISample.proxy-service" version="1.0.0" type="synapse/proxy-service" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/proxy-services/TestDSS.xml</file>
+    </artifact>
+</artifacts>

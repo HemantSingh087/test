@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/StatusRetrieveAPI" name="StatusRetrieveAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" protocol="http" uri-template="/GetInstitution/Status1">
+        <inSequence>
+            <call>
+                <endpoint>
+                    <address format="soap11" uri="http://www.mocky.io/v2/5cb56816330000f4175d7a8e"/>
+                </endpoint>
+            </call>
+
+
+            <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+            <property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+            <property name="returnResult" expression="json-eval($.result)" />
+            <payloadFactory media-type="json">
+								<format>
+									{
+                    "Hi": "hi"
+									}
+								</format>
+								<args>
+
+								</args>
+							</payloadFactory>
+            <log>
+                  <property name="Status" expression="Status"></property>
+            </log>
+            <respond/>
+
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

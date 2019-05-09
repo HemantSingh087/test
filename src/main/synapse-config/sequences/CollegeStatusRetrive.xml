@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="CollegeStatusRetrive" statistics="enable" trace="enable" xmlns="http://ws.apache.org/ns/synapse">
+    <property expression="get-property('counts')" name="SourceURI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <call>
+        <endpoint>
+            <address format="soap11" uri="local:///services/DssInstitutionsStatusRetrieve/DssInstitutionsStatusRetrieve"/>
+        </endpoint>
+    </call>
+    <foreach expression="//*[local-name() = 'RecCount']" id="foreach1" xmlns:ns="http://org.apache.synapse/xsd">
+        <sequence>
+            <property expression="//*[local-name() = 'RecCount']" name="RecCount" scope="default" type="STRING"/>
+            <property expression="//*[local-name() = 'LastUpdateDate']" name="LastUpdateDate" scope="default" type="STRING"/>
+        </sequence>
+        
+    </foreach>
+    <log>
+    <property name="JSON-Payload" expression="json-eval($.)"/>
+    <respond/>
+</sequence>

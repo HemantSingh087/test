@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/GetInstitutions" name="GetInstitutions" xmlns="http://ws.apache.org/ns/synapse">
+  <resource methods="GET" uri-template="/Status">
+      <inSequence>
+          <call>
+              <endpoint>
+                  <address format="soap11" uri="local:///services/DssInstitutionsStatusRetrieve/DssInstitutionsStatusRetrieve"/>
+              </endpoint>
+          </call>
+          <property name="messageType" value="application/json" scope="axis2"/>
+          <property name="ContentType" value="application/json" scope="axis2"/>
+          <property name="msgID" expression="get-property('MessageID')"/>
+          <log>
+              <property name="Status" expression="json-eval($.)"></property>
+              <property name="msgID" expression="get-property('msgID')"/>
+          </log>
+        <respond/>
+      </inSequence>
+      <outSequence/>
+      <faultSequence/>
+  </resource>
+  <resource methods="GET" uri-template="/*">
+    <inSequence>
+      <!--log level="full"/><-->
+      <property name="feature" scope="default" type="STRING" value="MHE_InstructorStore"/>
+			<property name="sequenceName" scope="default" type="STRING" value="GetInstitutions"/>
+			<property name="progress" scope="default" type="STRING" value="Start"/>
+			<log>
+				<property expression="$ctx:feature" name="Feature"/>
+				<property expression="$ctx:sequenceName" name="SequenceName"/>
+				<property expression="$ctx:progress" name="Progress"/>
+			</log>
+      <sequence key="CheckKey"/>
+      <property
+        expression="fn:substring(get-property('axis2','REST_URL_POSTFIX'),2)" name="postFix" scope="default" type="STRING"/>
+      <!--log>
+        <property name="postFixCheck" expression="$ctx:postFix"/>
+      </log><-->
+      <payloadFactory media-type="xml">
+         <format>
+           <body>
+             <var_mlins_salesforce_account_record_type>$1</var_mlins_salesforce_account_record_type>
+           </body>
+         </format>
+         <args>
+           <arg evaluator="xml" expression="$ctx:postFix"/>
+         </args>
+      </payloadFactory>
+      <call>
+         <endpoint>
+            <address format="soap11" uri="local:///services/DssInstitutionsRetrieve/DssInstitutionsRetrieve"/>
+         </endpoint>
+      </call>
+      <property name="messageType" value="application/json" scope="axis2"/>
+      <property name="ContentType" value="application/json" scope="axis2"/>
+      <respond/>
+    </inSequence>
+    <outSequence/>
+    <faultSequence/>
+  </resource>
+</api>

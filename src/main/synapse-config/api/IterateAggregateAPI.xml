@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/iterate" name="IterateAggregateAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource inSequence="sendSequence" methods="POST" outSequence="iterateOUT" uri-template="/*">
+        <faultSequence/>
+    </resource>
+</api>

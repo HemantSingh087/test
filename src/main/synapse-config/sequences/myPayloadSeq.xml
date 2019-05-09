@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="myPayloadSeq" statistics="enable" trace="enable" xmlns="http://ws.apache.org/ns/synapse">
+    <log category="DEBUG" level="full">
+        <property name="where?" value="inner sequence acting as API - START"/>
+    </log>
+    <payloadFactory media-type="json">
+        <format>{"id": "201", "fname": "Ramlal", "lname": "Gabbar"}</format>
+        <args/>
+    </payloadFactory>
+    <log category="DEBUG" level="full">
+        <property name="where?" value="inner sequence acting as API - END"/>
+    </log>
+    <respond/>
+</sequence>

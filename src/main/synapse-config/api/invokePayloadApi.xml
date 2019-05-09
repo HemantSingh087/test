@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api xmlns="http://ws.apache.org/ns/synapse" name="invokePayloadApi" context="/invoke" >
+   <resource methods="DELETE POST PUT GET">
+
+      <inSequence>
+         <log level="full" category="DEBUG">
+            <property name="where?" value="Inside In Sequence that invokes API" />
+         </log>
+         <send>
+            <endpoint>
+               <http uri-template="http://localhost:8280/payloadApi" />
+            </endpoint>
+         </send>
+         <log level="full" category="DEBUG">
+            <property name="where?" value="Exiting In Sequence that invokes API" />
+         </log>
+      </inSequence>
+
+      <outSequence>
+         <log level="full" category="DEBUG">
+            <property name="where?" value="Beginning payload transformation in out sequence" />
+         </log>
+         <payloadFactory media-type="xml">
+            <format>
+               <hello xmlns="">
+                  <hello1>$1</hello1>
+                  <hello2>$2</hello2>
+                  <hello3>$3</hello3>
+               </hello>
+            </format>
+            <args>
+               <arg evaluator="json" expression="$.id" />
+               <arg evaluator="json" expression="$.fname" />
+               <arg evaluator="json" expression="$.lname" />
+            </args>
+         </payloadFactory>
+         <log level="full" category="DEBUG">
+            <property name="where?" value="Ending payload transformation in out sequence" />
+         </log>
+         <respond />
+      </outSequence>
+
+   </resource>
+</api>

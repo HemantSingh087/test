@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/payloadApi" name="myPayloadApi" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="DELETE POST PUT GET">
+        <inSequence>
+            <sequence key="myPayloadSeq"/>
+            <respond/>
+        </inSequence>
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

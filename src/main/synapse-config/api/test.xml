@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/test" name="testsample" xmlns="http://ws.apache.org/ns/synapse">
+    <resource methods="GET" protocol="http" uri-template="/test1">
+        <inSequence>
+          <log>
+    				<property name="in seq" value="in sequence"></property>
+    			</log>
+            <send>
+                <endpoint>
+                    <address uri="http://www.mocky.io/v2/5cb56816330000f4175d7a8e"/>
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence>
+            <foreach expression="//jsonArray/jsonElement">
+                <sequence>
+
+                    <payloadFactory description="" media-type="json">
+                        <format>
+
+   [{
+      "id":$1,
+      "Name":"$2",
+      "lastName":"$3",
+      "email":"$4",
+      "mobile":"$5",
+      "dateOfBirth":"$6"
+   }
+]
+</format>
+                        <args>
+                            <arg evaluator="json" expression="$.id"/>
+                            <arg evaluator="json" expression="$.firstName"/>
+                            <arg evaluator="json" expression="$.lastName"/>
+                            <arg evaluator="json" expression="$.email"/>
+                            <arg evaluator="json" expression="$.mobile"/>
+                            <arg evaluator="json" expression="$.dateOfBirth"/>
+                        </args>
+                    </payloadFactory>
+                    <log level="full"/>
+                </sequence>
+            </foreach>
+            <send/>
+        </outSequence>
+        <faultSequence/>
+    </resource>
+</api>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse"
+       name="proxyIterateJson"
+       startOnLoad="true"
+       statistics="disable"
+       trace="disable"
+       transports="http,https">
+   <target>
+      <inSequence>
+         <payloadFactory media-type="json">
+            <format>
+                                        {"results": [&#xD;
+                                                  {&#xD;
+                                                  "desc": "Blind",&#xD;
+                                                  "carValue": "05",&#xD;
+                                                  "bikeValue": "08"&#xD;
+                                           },&#xD;
+                                                  {&#xD;
+                                                  "desc": "Deaf",&#xD;
+                                                  "carValue": "09",&#xD;
+                                                  "bikeValue": "10"&#xD;
+                                           },&#xD;
+                                        {&#xD;
+                                                  "desc": "Oxygen",&#xD;
+                                                  "carValue": "07"&#xD;
+                                           },&#xD;
+                                        {&#xD;
+                                                  "desc": "carbon",&#xD;
+                                                  "bikeValue": "06"&#xD;
+                                           }]&#xD;
+                                        }
+                        </format>
+            <args/>
+         </payloadFactory>
+         <iterate xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  attachPath="//jsonObject"
+                  expression="//jsonObject/results"
+                  id="it1"
+                  preservePayload="true">
+            <target>
+               <sequence>
+                  <property expression="$body//jsonObject/results/carValue"
+                            name="carValue"
+                            scope="default"
+                            type="STRING"/>
+                  <property expression="$body//jsonObject/results/bikeValue"
+                            name="bikeValue"
+                            scope="default"
+                            type="STRING"/>
+                  <property expression="$body//jsonObject/results/desc"
+                            name="description"
+                            scope="default"
+                            type="STRING"/>
+                  <script language="js">var carValue = mc.getProperty("carValue");
+                                        var bikeValue = mc.getProperty("bikeValue");
+                                        var desc = mc.getProperty("description");
+                                        var concatValue;
+                                        if(carValue == null || carValue == "") {
+                                           concatValue = "B_" + bikeValue;
+                                        } else if(bikeValue == null || bikeValue == "" ){
+                                           concatValue = "C_" + carValue;
+                                        }else {
+                                           concatValue = "C_"+ carValue + "-" + "B_" + bikeValue;
+                                        }
+                                        print("Value concatenado: "+ concatValue );
+                                        mc.setProperty("concatValue", concatValue);
+                                        mc.setPayloadJSON({"result":{"id" : concatValue,"description" : desc}});</script>
+                  <log>
+                     <property expression="json-eval($.result.id)" name="JSON-Payload"/>
+                  </log>
+                  <loopback/>
+               </sequence>
+            </target>
+         </iterate>
+      </inSequence>
+      <outSequence>
+         <property name="res" scope="default">
+            <ns:Response xmlns:ns="www.response.org"/>
+         </property>
+         <aggregate id="it1">
+            <completeCondition>
+               <messageCount max="-1" min="-1"/>
+            </completeCondition>
+            <onComplete enclosingElementProperty="res" expression="$body//result">
+               <log level="custom" separator=",">
+                  <property expression="json-eval($.)" name="OUPUTSECUENSE"/>
+               </log>
+               <send/>
+            </onComplete>
+         </aggregate>
+      </outSequence>
+      <faultSequence/>
+   </target>
+   <description/>
+</proxy>

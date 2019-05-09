@@ -1,0 +1,45 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="iterOutTest">
+   <property name="rootElement" scope="default">
+      <jsonObject xmlns=""/>
+   </property>
+   <iterate xmlns:ns="http://org.apache.synapse/xsd"
+            continueParent="true"
+            expression="//ARR_ITEM">
+      <target>
+         <sequence>
+            <log level="custom">
+               <property name="iterator" value="in the iterate"/>
+            </log>
+            <payloadFactory media-type="json">
+               <format>
+                $1
+            </format>
+               <args>
+                  <arg evaluator="json" expression="$."/>
+               </args>
+            </payloadFactory>
+            <script language="js">
+               mc.setProperty('CONTENT_TYPE', 'application/json');
+               var payLoad = mc.getPayloadJSON();
+               var catalogItem = payLoad.ARR_ITEM;
+               catalogItem.CT.CT_ITEM.ED = "456";
+               catalogItem.DISCRIPTIONS = "This is the modified description";
+               mc.setPayloadJSON(payLoad);</script>
+            <log level="full"/>
+            <aggregate>
+      <completeCondition>
+         <messageCount min="-1" max="-1"/>
+      </completeCondition>
+      <onComplete xmlns:ns="http://org.apache.synapse/xsd"
+                  expression="//jsonObject/ARR_ITEM"
+                  enclosingElementProperty="rootElement">
+         <log level="full">
+            <property name="MSG" value="Aggregated Msg"/>
+         </log>
+         <respond/>
+      </onComplete>
+   </aggregate>
+         </sequence>
+      </target>
+   </iterate>
+</sequence>

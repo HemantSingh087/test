@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy xmlns="http://ws.apache.org/ns/synapse" name="TestDSS" startOnLoad="true" transports="http https">
+   <target>
+      <inSequence>
+         <property xmlns:onyx="http://www.onyx.com/OEAS/WebService" expression="//onyx:SessionID" name="onyxSessionId" scope="default" type="STRING" />
+         <property xmlns:onyx="http://www.onyx.com/OEAS/WebService" expression="//onyx:LogicalObjectName" name="logicalObjectName" scope="default" type="STRING" />
+         <property xmlns:onyx="http://www.onyx.com/OEAS/WebService" expression="//onyx:LogicalMethodName" name="logicalMethodName" scope="default" type="STRING" />
+         <!-- Local entries for calls -->
+         <property expression="get-property('OnyxURL')" name="uri.var.OnyxUri" scope="default" type="STRING" />
+         <property expression="get-property('OrderUpsertCall')" name="uri.var.OrderUpsert" scope="default" type="STRING" />
+         <property expression="get-property('OrderHeaderUpsertCall')" name="uri.var.OrderHeaderUpsert" scope="default" type="STRING" />
+         <property expression="get-property('OrderLineUpsertCall')" name="uri.var.OrderLineUpsert" scope="default" type="STRING" />
+         <property name="feature" scope="default" type="STRING" value="MHE_App" />
+         <property name="sequenceName" scope="default" type="STRING" value="MLESBExecute" />
+         <property name="progress" scope="default" type="STRING" value="Start" />
+         <log>
+            <property expression="$ctx:feature" name="Feature" />
+            <property expression="$ctx:sequenceName" name="SequenceName" />
+            <property expression="$ctx:progress" name="Progress" />
+            <property expression="$ctx:logicalObjectName" name="object" />
+            <property expression="$ctx:logicalMethodName" name="method" />
+         </log>
+         <enrich>
+            <source xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" clone="true" xpath="$body/soapenv:Envelope/soapenv:Body/child::*" />
+            <target property="ORIGINAL_BODY" type="property" />
+         </enrich>
+         <enrich>
+            <source clone="true" property="ORIGINAL_BODY" type="property" />
+            <target type="body" />
+         </enrich>
+         <property expression="fn:substring-after(get-property('MessageID'), 'urn:uuid:')" name="MessageIDTest" scope="default" type="STRING" />
+         <property name="messageType" scope="axis2" type="STRING" value="application/xml" />
+         <property name="ContentType" scope="axis2" type="STRING" value="application/xml" />
+         <property expression="$body" name="test" scope="default" type="OM" />
+         <property expression="$body" name="test2" scope="default" type="OM" />
+         <enrich>
+            <source clone="true" type="inline">
+               <body />
+            </source>
+            <target property="test" type="property" />
+         </enrich>
+         <switch xmlns:onyx="http://www.onyx.com/OEAS/WebService" source="$ctx:logicalObjectName">
+            <case regex="literatureOrderLine">
+               <filter regex="saveCollection" source="$ctx:logicalMethodName">
+                  <then>
+                     <log>
+                        <property name="log" value="++++Inside Filter Mediator (OrderLine/SaveCollection)+++" />
+                     </log>
+                     <payloadFactory media-type="xml">
+                        <format>
+                           <test>$1</test>
+                        </format>
+                        <args>
+                           <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'ParamXML']" />
+                        </args>
+                     </payloadFactory>
+                     <payloadFactory media-type="xml">
+                        <format>
+                           <test>$1</test>
+                        </format>
+                        <args>
+                           <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'literatureOrderLines']" />
+                        </args>
+                     </payloadFactory>
+                     <log>
+                        <property name="log" value="++++inside literatureOrderLine switch condition++++" />
+                     </log>
+                     <foreach expression="//*[local-name() = 'literatureOrderLine']" id="foreachOrderLine">
+                        <sequence>
+                           <log>
+                              <property name="log" value="++++Inside Foreach OrderLine" />
+                           </log>
+                           <payloadFactory media-type="xml">
+                              <format>
+                                 <test>$1</test>
+                              </format>
+                              <args>
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'literatureOrderLine']" />
+                              </args>
+                           </payloadFactory>
+                           <property xmlns:ns="http://org.apache.synapse/xsd" expression="//*[local-name() = 'legacySecondaryId']" name="secondaryId" scope="default" type="STRING" />
+                           <property expression="//*[local-name() = 'comment2']" name="comment2" scope="default" type="STRING" />
+                           <property expression="fn:concat(get-property('sfids'),',',get-property('comment2'))" name="sfids" scope="default" type="STRING" />
+                           <log>
+                              <property expression="get-property('sfids')" name="sfid" />
+                           </log>
+                           <payloadFactory media-type="xml">
+                              <format>
+                                 <p:OrderLineUpsert xmlns:p="OrderLineUpsert">
+                                    <xs:var_mlol_sf_order_line_id xmlns:xs="OrderLineUpsert">$2</xs:var_mlol_sf_order_line_id>
+                                    <xs:var_mlol_quantity xmlns:xs="OrderLineUpsert">$3</xs:var_mlol_quantity>
+                                    <xs:var_mlol_owner_id_onyx_guid xmlns:xs="OrderLineUpsert">$1</xs:var_mlol_owner_id_onyx_guid>
+                                    <xs:var_mlol_line_status xmlns:xs="OrderLineUpsert">$4</xs:var_mlol_line_status>
+                                    <xs:var_mlol_line_status_desc xmlns:xs="OrderLineUpsert">NEED TO ADD DESC</xs:var_mlol_line_status_desc>
+                                    <xs:var_mlol_immediate_priority xmlns:xs="OrderLineUpsert">$5</xs:var_mlol_immediate_priority>
+                                    <xs:var_mlol_fulfillment_type_code xmlns:xs="OrderLineUpsert">$6</xs:var_mlol_fulfillment_type_code>
+                                    <xs:var_mlol_fulfillment_type_name xmlns:xs="OrderLineUpsert" />
+                                    <xs:var_mlol_unit_price xmlns:xs="OrderLineUpsert">$7</xs:var_mlol_unit_price>
+                                    <xs:var_mlol_sf_order_header_id xmlns:xs="OrderLineUpsert">$8</xs:var_mlol_sf_order_header_id>
+                                    <xs:var_mlol_isbn_10 xmlns:xs="OrderLineUpsert">$9</xs:var_mlol_isbn_10>
+                                    <xs:var_mlol_approval_status xmlns:xs="OrderLineUpsert">$10</xs:var_mlol_approval_status>
+                                    <xs:var_mlol_order_line_secid_onyx xmlns:xs="OrderLineUpsert">$11</xs:var_mlol_order_line_secid_onyx>
+                                    <xs:var_mlol_is_digital xmlns:xs="OrderLineUpsert">$12</xs:var_mlol_is_digital>
+                                    <xs:var_mlol_shipping_method xmlns:xs="OrderLineUpsert">$13</xs:var_mlol_shipping_method>
+                                    <xs:var_mlol_pub_date xmlns:xs="OrderLineUpsert">$14</xs:var_mlol_pub_date>
+                                    <xs:var_mlol_seasonal_pub_start_date xmlns:xs="OrderLineUpsert">$15</xs:var_mlol_seasonal_pub_start_date>
+                                    <xs:var_mlol_seasonal_pub_end_date xmlns:xs="OrderLineUpsert">$16</xs:var_mlol_seasonal_pub_end_date>
+                                    <xs:var_mlol_future_ship_date xmlns:xs="OrderLineUpsert">$17</xs:var_mlol_future_ship_date>
+                                 </p:OrderLineUpsert>
+                              </format>
+                              <args>
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'ownerId']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'comment2']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'quantity']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'lineStatusId']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'immediatePriority']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'fulfillmentTypeCode']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'unitPrice']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'orderSfId']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'productNumber']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'approvalStatus']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'legacySecondaryId']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'isDigital']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'shippingMethod']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'pubDate']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'seasonalPubStartDate']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'seasonalPubEndDate']" />
+                                 <arg xmlns:ns="http://org.apache.synapse/xsd" evaluator="xml" expression="//*[local-name() = 'futureShipDate']" />
+                              </args>
+                           </payloadFactory>
+                           <property name="messageType" scope="axis2" type="STRING" value="application/xml" />
+                           <property name="progress" scope="default" type="STRING" value="Upserting to DSS for orderLine" />
+                           <log>
+                              <property expression="$ctx:feature" name="Feature" />
+                              <property expression="$ctx:sequenceName" name="SequenceName" />
+                              <property expression="$ctx:progress" name="Progress" />
+                              <property expression="$ctx:secondaryId" name="orderLineSecId" />
+                              <property expression="$ctx:sfids" name="sfids" />
+                           </log>
+                           <enrich>
+                              <source clone="true" type="body" />
+                              <target property="test2" type="property" />
+                           </enrich>
+                           <enrich>
+                              <source clone="true" property="test2" type="property" />
+                              <target action="child" xpath="$ctx:test" />
+                           </enrich>
+                        </sequence>
+                     </foreach>
+                     <enrich>
+                        <source clone="true" property="test" type="property" />
+                        <target type="body" />
+                     </enrich>
+                     <property name="messageType" scope="axis2" type="STRING" value="application/xml" />
+                     <property expression="//*[local-name()='var_mlol_order_line_secid_onyx']" name="secondaryId" scope="default" type="STRING" />
+                     <log>
+                        <property expression="get-property('secondaryId')" name="secondaryId" />
+                     </log>
+                     <call>
+                        <endpoint>
+                           <address format="soap11" uri="local:///services/DssOrderLineUpsert/DssOrderLineUpsert" />
+                        </endpoint>
+                     </call>
+                     <payloadFactory media-type="xml">
+                        <format>
+                           <p:DssMLOrderLineIdRetrieve xmlns:p="mlOrderLineIdRetrieve">
+                              <xs:var_mlol_sfids xmlns:xs="mlOrderLineIdRetrieve">$1</xs:var_mlol_sfids>
+                           </p:DssMLOrderLineIdRetrieve>
+                        </format>
+                        <args>
+                           <arg evaluator="xml" expression="$ctx:sfids" />
+                        </args>
+                     </payloadFactory>
+                     <log>
+                        <property name="secondaryId" value="AFTER secondry id" />
+                     </log>
+                     <log level="full" />
+                     <header expression="fn:concat('Basic ', base64Encode('admin:admin'))" name="Authorization" scope="transport" />
+                     <call>
+                        <endpoint>
+                           <address format="soap11" uri="local:///services/DssMLOrderLineIdRetrieve/DssMLOrderLineIdRetrieve" />
+                        </endpoint>
+                     </call>
+                     <log level="full" />
+                     <log>
+                        <property name="log" value="call was successfull" />
+                     </log>
+                     <property evaluator="xml" expression="//*[local-name() = 'var_order_service_identity_Header']/text()" name="mySQLId" scope="default" type="STRING" />
+                     <log>
+                        <property expression="get-property('mySQLId')" name="var_order_service_identity_Header" />
+                     </log>
+                     <property xmlns:ns="http://org.apache.synapse/xsd" expression="//*[local-name() = 'var_order_service_identity_line']/text()" name="dssResponse" scope="default" type="STRING" />
+                     <!--Dummy the onyx response for now, need to try to remove from salesforce side that it requires this, but will take more time-->
+                     <filter xpath="boolean(get-property('dssResponse'))">
+                        <then>
+                           <log>
+                              <property name="log" value="+++inside then condition of dssResponse" />
+                           </log>
+                           <foreach expression="//*[local-name()='Reference']" id="foreachDssResponseOrderLine">
+                              <sequence>
+                                 <property expression="//*[local-name() = 'var_order_service_identity_line']/text()" name="mySQLId" scope="default" type="STRING" />
+                                 <property expression="fn:concat('000000000',get-property('mySQLId'))" name="mySQLId" scope="default" type="STRING" />
+                                 <script language="js"><![CDATA[var secondary_id = mc.getProperty('mySQLId');
+			                       secondary_id = secondary_id.slice(-10);
+			                       mc.setProperty('mySQLId', secondary_id.toString());]]></script>
+                                 <payloadFactory media-type="xml">
+                                    <format>
+                                       <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                          <soapenv:Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                                             <ExecuteResponse xmlns="http://www.onyx.com/OEAS/WebService">
+                                                <ExecuteResult>
+                                                   <returnXml>
+                                                      <otmId>$1</otmId>
+                                                      <context>
+                                                         <sessionSecondsRemaining>14400</sessionSecondsRemaining>
+                                                      </context>
+                                                      <methodStatus>
+                                                         <statusType>success</statusType>
+                                                      </methodStatus>
+                                                      <parametersReturn>
+                                                         <literatureOrderLines objectType="literatureOrderLine" content="keysOnly">
+                                                            <literatureOrderLine action="insert" content="keysOnly">
+                                                               <primaryId>DSS-$1</primaryId>
+                                                            </literatureOrderLine>
+                                                         </literatureOrderLines>
+                                                      </parametersReturn>
+                                                      <customData />
+                                                   </returnXml>
+                                                </ExecuteResult>
+                                             </ExecuteResponse>
+                                          </soapenv:Body>
+                                       </soap:Envelope>
+                                    </format>
+                                    <args>
+                                       <arg evaluator="xml" expression="$ctx:mySQLId" />
+                                    </args>
+                                 </payloadFactory>
+                                 <property name="progress" scope="default" type="STRING" value="Upsert to DSS for OrderLine succeeded, returning success to SF" />
+                                 <log>
+                                    <property expression="$ctx:feature" name="Feature" />
+                                    <property expression="$ctx:sequenceName" name="SequenceName" />
+                                    <property expression="$ctx:progress" name="Progress" />
+                                    <property expression="$ctx:secondaryId" name="orderLineSecId" />
+                                    <property expression="$ctx:mySQLId" name="orderLineDSSId" />
+                                 </log>
+                              </sequence>
+                           </foreach>
+                           <log>
+                              <property expression="get-property('logicalMethodName')" name="logicalMethodName" />
+                           </log>
+                        </then>
+                        <else>
+                           <payloadFactory media-type="xml">
+                              <format>
+                                 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                                    <soap:Body>
+                                       <ExecuteResponse xmlns="http://www.onyx.com/OEAS/WebService">
+                                          <ExecuteResult>
+                                             <returnXml>
+                                                <otmId>$1</otmId>
+                                                <context>
+                                                   <sessionSecondsRemaining>14400</sessionSecondsRemaining>
+                                                </context>
+                                                <methodStatus>
+                                                   <statusType>failure</statusType>
+                                                   <error>
+                                                      <errorDescription>Failed to save to DSS</errorDescription>
+                                                      <errorNumber>-2147220886</errorNumber>
+                                                      <timestamp>2017-10-18 09:17:42</timestamp>
+                                                   </error>
+                                                </methodStatus>
+                                                <parametersReturn />
+                                                <customData />
+                                             </returnXml>
+                                          </ExecuteResult>
+                                       </ExecuteResponse>
+                                    </soap:Body>
+                                 </soap:Envelope>
+                              </format>
+                              <args>
+                                 <arg evaluator="xml" expression="$ctx:MessageIDTest" />
+                              </args>
+                           </payloadFactory>
+                        </else>
+                     </filter>
+                     <property name="messageType" scope="axis2" type="STRING" value="text/xml" />
+                     <property expression="fn:substring-after(get-property('MessageID'), 'urn:uuid:')" name="MessageIDResponse" scope="default" type="STRING" />
+                     <property name="progress" scope="default" type="STRING" value="Upsert to DSS for OrderLine failed, returning failure to SF" />
+                     <log>
+                        <property expression="$ctx:feature" name="Feature" />
+                        <property expression="$ctx:sequenceName" name="SequenceName" />
+                        <property expression="$ctx:progress" name="Progress" />
+                        <property expression="$ctx:secondaryId" name="orderLineSecId" />
+                     </log>
+                     <respond />
+                  </then>
+                  <else>
+                     <property name="progress" scope="default" type="STRING" value="Calling literatureOrderLine object, method other than saveCollection. Should never hit after deco, exiting out" />
+                     <log>
+                        <property expression="$ctx:feature" name="Feature" />
+                        <property expression="$ctx:sequenceName" name="SequenceName" />
+                        <property expression="$ctx:progress" name="Progress" />
+                        <property expression="$ctx:secondaryId" name="orderLineSecId" />
+                     </log>
+                     <!--send>
+                        <endpoint key="OnyxExecute"/>
+                     </send>-->
+                     <payloadFactory media-type="xml">
+                        <format>
+                           <error>Calling literatureOrderLine object, method other than saveCollection. Should never hit after deco</error>
+                        </format>
+                        <args />
+                     </payloadFactory>
+                     <respond />
+                  </else>
+               </filter>
+            </case>
+            <default>
+               <property name="progress" scope="default" type="STRING" value="Calling an object other than LiteratureOrder or LiteratureOrderLine. Should never hit after deco, exiting out" />
+               <log>
+                  <property expression="$ctx:feature" name="Feature" />
+                  <property expression="$ctx:sequenceName" name="SequenceName" />
+                  <property expression="$ctx:progress" name="Progress" />
+               </log>
+               <!--send>
+                  <endpoint key="OnyxExecute"/>
+               </send>-->
+               <payloadFactory media-type="xml">
+                  <format>
+                     <error>Calling an object other than LiteratureOrder or LiteratureOrderLine. Should never hit after deco</error>
+                  </format>
+                  <args />
+               </payloadFactory>
+               <respond />
+            </default>
+         </switch>
+      </inSequence>
+      <outSequence>
+         <send />
+      </outSequence>
+      <faultSequence />
+   </target>
+</proxy>

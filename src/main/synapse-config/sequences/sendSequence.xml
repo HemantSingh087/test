@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="sendSequence" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="custom">
+        <property name="test" value="Execution Started"/>
+    </log>
+    <call>
+        <endpoint>
+            <http method="GET" uri-template="http://www.mocky.io/v2/57a881a3110000b6171d4546"/>
+        </endpoint>
+    </call>
+</sequence>
